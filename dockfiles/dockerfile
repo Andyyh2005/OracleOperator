@@ -1,0 +1,21 @@
+FROM python:3.6.4-slim-stretch
+
+RUN apt-get update && apt-get install -y libaio1 wget
+RUN apt-get install -y unzip
+
+WORKDIR /opt/oracle
+RUN wget \
+    https://download.oracle.com/otn_software/linux/instantclient/193000/instantclient-basic-linux.x64-19.3.0.0.0dbru.zip && \
+    unzip instantclient-basic-linux.x64-19.3.0.0.0dbru.zip && \
+    rm -f instantclient-basic-linux.x64-19.3.0.0.0dbru.zip
+RUN cd /opt/oracle/instantclient_19_3 && rm -f *jdbc* *occi* *mysql* *README *jar \
+    uidrvci genezi adrci
+RUN echo /opt/oracle/instantclient_19_3 > /etc/ld.so.conf.d/oracle-instantclient.conf && \
+    ldconfig
+RUN python3.6 -m pip install cx_Oracle
+RUN python3.6 -m pip install tornado==5.0.2
+
+RUN groupadd -g 1972 vflow && useradd -g 1972 -u 1972 -m vflow
+USER 1972:1972
+WORKDIR /home/vflow
+ENV HOME=/home/vflow
